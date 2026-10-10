@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Platform</title>
+  <style>
+    :root {
+      --navy: #172554;
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --bg: #f3f6fc;
+      --text: #172033;
+      --muted: #64748b;
+      --border: #dbe4f0;
+      --white: #ffffff;
+      --green: #047857;
+      --red: #b91c1c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      color: white;
+      padding: 26px clamp(20px, 5vw, 64px);
+      background: linear-gradient(115deg, #172554, #3349b5 72%, #4359d5);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .brand { display: flex; align-items: center; gap: 16px; }
+    .brand-icon {
+      width: 56px; height: 56px; border-radius: 16px;
+      background: rgba(255,255,255,.14);
+      display: grid; place-items: center; font-size: 30px;
+    }
+    h1 { margin: 0; font-size: clamp(24px, 3vw, 34px); letter-spacing: -.6px; }
+    .subtitle { margin: 6px 0 0; color: #dbeafe; font-size: 15px; }
+    nav { display: flex; gap: 10px; flex-wrap: wrap; }
+    nav a {
+      color: white; text-decoration: none; padding: 10px 14px;
+      border-radius: 10px; background: rgba(255,255,255,.08); font-size: 14px;
+    }
+    nav a:hover { background: rgba(255,255,255,.18); }
+    main { max-width: 1250px; margin: 30px auto; padding: 0 20px 40px; }
+    .workspace {
+      background: var(--white); border: 1px solid #e1e9f5;
+      border-radius: 18px; padding: clamp(20px, 3vw, 32px);
+      box-shadow: 0 10px 30px rgba(31, 61, 120, .06);
+      display: grid; grid-template-columns: minmax(240px, .8fr) minmax(0, 1.4fr);
+      gap: 30px;
+    }
+    .tool-panel { padding-right: 28px; border-right: 1px solid #e5edf8; }
+    .section-title { font-size: 19px; margin: 0 0 22px; display: flex; align-items: center; gap: 10px; }
+    .section-title span { color: var(--blue); font-size: 23px; }
+    label { display: block; font-size: 14px; font-weight: 650; margin-bottom: 8px; }
+    input, select, textarea {
+      width: 100%; padding: 12px 13px; border: 1px solid #cbd5e1;
+      border-radius: 9px; background: white; color: var(--text); font: inherit;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px #2563eb1c; }
+    .field { margin-bottom: 18px; }
+    .tool-description {
+      margin-top: 26px; padding: 22px; background: #f3f7ff;
+      border-radius: 12px; min-height: 180px;
+    }
+    .tool-description h3 { margin: 0 0 8px; font-size: 20px; }
+    .tool-description p { margin: 0 0 20px; color: #52627c; line-height: 1.55; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { color: #1d4ed8; background: #e0ebff; border-radius: 999px; padding: 6px 11px; font-size: 13px; }
+    .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .primary-btn {
+      width: 100%; border: 0; border-radius: 9px; padding: 14px 18px;
+      color: white; background: linear-gradient(100deg, #1684ed, #3949ed);
+      font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 2px;
+    }
+    .primary-btn:hover { filter: brightness(.96); }
+    .primary-btn:disabled { opacity: .65; cursor: wait; }
+    .result-panel {
+      margin-top: 22px; padding: 18px; background: #ecfdf5;
+      border: 1px solid #bbf7d0; border-radius: 12px;
+    }
+    .result-panel.error { background: #fff1f2; border-color: #fecdd3; }
+    .result-heading { margin: 0 0 12px; font-size: 17px; color: var(--green); }
+    .error .result-heading { color: var(--red); }
+    pre {
+      white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; padding: 15px;
+      border: 1px solid #d9e4ee; border-radius: 8px; background: #fff;
+      color: #0f5132; font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      min-height: 60px;
+    }
+    .error pre { color: #991b1b; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 22px; }
+    .card { padding: 20px; background: white; border: 1px solid #e1e9f5; border-radius: 13px; }
+    .card h3 { margin: 0 0 8px; font-size: 17px; }
+    .card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .hidden { display: none !important; }
+    .hint { color: var(--muted); font-size: 12px; margin-top: 6px; }
+    footer { text-align: center; color: var(--muted); padding: 0 20px 25px; font-size: 13px; }
+    @media (max-width: 780px) {
+      .workspace { grid-template-columns: 1fr; }
+      .tool-panel { padding-right: 0; padding-bottom: 24px; border-right: 0; border-bottom: 1px solid #e5edf8; }
+      .cards { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .input-grid { grid-template-columns: 1fr; gap: 0; }
+      header { align-items: flex-start; }
+      nav a { padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true">🤖</div>
+      <div>
+        <h1>Agent Platform</h1>
+        <p class="subtitle">A modular platform for tools and AI agents</p>
+      </div>
+    </div>
+    <nav aria-label="Main navigation">
+      <a href="/">Home</a>
+      <a href="/docs" target="_blank" rel="noreferrer">API Docs</a>
+      <a href="/health" target="_blank" rel="noreferrer">Health</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="workspace" aria-label="Tool workspace">
+      <div class="tool-panel">
+        <h2 class="section-title"><span aria-hidden="true">⚙</span> Tool Selection</h2>
+        <div class="field">
+          <label for="toolSelect">Choose tool</label>
+          <select id="toolSelect">
+            <option value="calculator">Calculator</option>
+            <option value="text">Text Processor</option>
+            <option value="info">Tool Information</option>
+          </select>
+        </div>
+        <div class="tool-description">
+          <h3 id="toolName">Calculator</h3>
+          <p id="toolDescription">Perform basic mathematical operations.</p>
+          <strong id="operationsTitle">Supported operations</strong>
+          <div class="chips" id="operationsList" style="margin-top:12px">
+            <span class="chip">add</span><span class="chip">subtract</span>
+            <span class="chip">multiply</span><span class="chip">divide</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-panel">
+        <h2 class="section-title"><span aria-hidden="true">▤</span> Input Parameters</h2>
+        <form id="toolForm">
+          <div id="calculatorFields">
+            <div class="input-grid">
+              <div class="field">
+                <label for="numberA">Number A</label>
+                <input id="numberA" type="number" step="any" value="10" required />
+              </div>
+              <div class="field">
+                <label for="numberB">Number B</label>
+                <input id="numberB" type="number" step="any" value="5" required />
+              </div>
+            </div>
+            <div class="field">
+              <label for="calculatorOperation">Operation</label>
+              <select id="calculatorOperation">
+                <option value="add">Add (+)</option>
+                <option value="subtract">Subtract (−)</option>
+                <option value="multiply">Multiply (×)</option>
+                <option value="divide">Divide (÷)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="textFields" class="hidden">
+            <div class="field">
+              <label for="textInput">Text</label>
+              <textarea id="textInput" rows="4" maxlength="10000" placeholder="Enter text to process">FastAPI Agent Engineering</textarea>
+            </div>
+            <div class="field">
+              <label for="textOperation">Operation</label>
+              <select id="textOperation">
+                <option value="uppercase">Uppercase</option>
+                <option value="lowercase">Lowercase</option>
+                <option value="word_count">Word count</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="infoFields" class="hidden">
+            <div class="field">
+              <label for="toolId">Choose registered tool</label>
+              <select id="toolId">
+                <option value="calculator">Calculator</option>
+                <option value="text">Text Processor</option>
+                <option value="unknown">Unknown tool (test 404)</option>
+              </select>
+              <p class="hint">This calls GET /tools/{tool_id}.</p>
+            </div>
+          </div>
+
+          <button class="primary-btn" id="runButton" type="submit">▶ &nbsp; Run Tool</button>
+        </form>
+
+        <section class="result-panel hidden" id="resultPanel" aria-live="polite">
+          <h3 class="result-heading" id="resultHeading">Result</h3>
+          <pre id="resultOutput">{}</pre>
+        </section>
+      </div>
+    </section>
+
+    <section class="cards" aria-label="Available tools">
+      <article class="card">
+        <h3>▦ &nbsp; Calculator</h3>
+        <p>Perform mathematical operations: add, subtract, multiply, and divide.</p>
+      </article>
+      <article class="card">
+        <h3>T &nbsp; Text Processor</h3>
+        <p>Process text using uppercase, lowercase, and word-count operations.</p>
+      </article>
+      <article class="card">
+        <h3>ⓘ &nbsp; Tool Information</h3>
+        <p>Retrieve metadata for registered tools through the API.</p>
+      </article>
+    </section>
+  </main>
+
+  <footer>Agent Platform · FastAPI frontend</footer>
+
+  <script>
+    const toolSelect = document.getElementById("toolSelect");
+    const calculatorFields = document.getElementById("calculatorFields");
+    const textFields = document.getElementById("textFields");
+    const infoFields = document.getElementById("infoFields");
+    const toolName = document.getElementById("toolName");
+    const toolDescription = document.getElementById("toolDescription");
+    const operationsTitle = document.getElementById("operationsTitle");
+    const operationsList = document.getElementById("operationsList");
+    const form = document.getElementById("toolForm");
+    const runButton = document.getElementById("runButton");
+    const resultPanel = document.getElementById("resultPanel");
+    const resultHeading = document.getElementById("resultHeading");
+    const resultOutput = document.getElementById("resultOutput");
+
+    const toolInfo = {
+      calculator: {
+        name: "Calculator",
+        description: "Perform basic mathematical operations.",
+        operations: ["add", "subtract", "multiply", "divide"]
+      },
+      text: {
+        name: "Text Processor",
+        description: "Perform text-processing operations.",
+        operations: ["uppercase", "lowercase", "word_count"]
+      },
+      info: {
+        name: "Tool Information",
+        description: "Retrieve details about registered tools.",
+        operations: ["GET /tools/{tool_id}"]
+      }
+    };
+
+    function renderToolInfo() {
+      const selected = toolSelect.value;
+      calculatorFields.classList.toggle("hidden", selected !== "calculator");
+      textFields.classList.toggle("hidden", selected !== "text");
+      infoFields.classList.toggle("hidden", selected !== "info");
+
+      const info = toolInfo[selected];
+      toolName.textContent = info.name;
+      toolDescription.textContent = info.description;
+      operationsTitle.textContent = selected === "info" ? "Endpoint" : "Supported operations";
+      operationsList.replaceChildren();
+      info.operations.forEach(operation => {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.textContent = operation;
+        operationsList.appendChild(chip);
+      });
+
+      resultPanel.classList.add("hidden");
+    }
+
+    function showResult(data, isError = false) {
+      resultPanel.classList.remove("hidden", "error");
+      if (isError) resultPanel.classList.add("error");
+      resultHeading.textContent = isError ? "Request failed" : "Result";
+      resultOutput.textContent = JSON.stringify(data, null, 2);
+    }
+
+    toolSelect.addEventListener("change", renderToolInfo);
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      runButton.disabled = true;
+      runButton.textContent = "Running...";
+      resultPanel.classList.add("hidden");
+
+      let endpoint;
+      let method = "GET";
+      let body;
+
+      if (toolSelect.value === "calculator") {
+        const a = Number(document.getElementById("numberA").value);
+        const b = Number(document.getElementById("numberB").value);
+        if (!Number.isFinite(a) || !Number.isFinite(b)) {
+          showResult({detail: "Enter valid numbers for A and B."}, true);
+          runButton.disabled = false;
+          runButton.innerHTML = "▶ &nbsp; Run Tool";
+          return;
+        }
+        endpoint = "/tools/calculator";
+        method = "POST";
+        body = {
+          a,
+          b,
+          operation: document.getElementById("calculatorOperation").value
+        };
+      } else if (toolSelect.value === "text") {
+        const text = document.getElementById("textInput").value;
+        if (!text.trim()) {
+          showResult({detail: "Enter some text first."}, true);
+          runButton.disabled = false;
+          runButton.innerHTML = "▶ &nbsp; Run Tool";
+          return;
+        }
+        endpoint = "/tools/text";
+        method = "POST";
+        body = {
+          text,
+          operation: document.getElementById("textOperation").value
+        };
+      } else {
+        endpoint = "/tools/" + encodeURIComponent(document.getElementById("toolId").value);
+      }
+
+      try {
+        const response = await fetch(endpoint, {
+          method,
+          headers: body ? {"Content-Type": "application/json"} : {},
+          body: body ? JSON.stringify(body) : undefined
+        });
+        const data = await response.json().catch(() => ({
+          detail: "The server returned a non-JSON response."
+        }));
+        if (!response.ok) {
+          showResult({status_code: response.status, ...data}, true);
+        } else {
+          showResult(data);
+        }
+      } catch (error) {
+        showResult({
+          detail: "Could not reach the API. Ensure FastAPI is running at the same origin.",
+          error: String(error)
+        }, true);
+      } finally {
+        runButton.disabled = false;
+        runButton.innerHTML = "▶ &nbsp; Run Tool";
+      }
+    });
+
+    renderToolInfo();
+  </script>
+</body>
+</html>
