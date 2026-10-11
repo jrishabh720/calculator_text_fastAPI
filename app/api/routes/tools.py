@@ -12,6 +12,13 @@ from app.services.tool_service import execute_text_operation
 from app.schemas.tool import ToolInfoResponse
 from app.services.tool_service import get_tool_information
 
+from typing import Annotated
+from collections.abc import Callable
+from fastapi import Depends
+
+from app.core.dependencies import get_calculator_service
+from app.schemas.tool import CalculatorRequest, CalculatorResponse
+
 router = APIRouter(
     prefix="/tools",
     tags=["Tools"],
@@ -35,22 +42,18 @@ def get_tool_endpoint(
         ) from exc
 
 
-@router.post(
-    "/calculator",
-    response_model=CalculatorResponse,
-)
-def calculator_endpoint(
+@router.post("/calculator", response_model=CalculatorResponse)
+def calculate(
     request: CalculatorRequest,
-) -> CalculatorResponse:
-
+    calculator_service: Annotated[
+        Callable[[CalculatorRequest], CalculatorResponse],
+        Depends(get_calculator_service),
+    ],
+):
     try:
-        return execute_calculation(request)
-
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
-        ) from exc
+        return calculator_service(request)
+    except (ValueError, ZeroDivisionError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @router.post(

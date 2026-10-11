@@ -17,3 +17,5 @@ def calculate(a: float, b: float, operation: str) -> float:
 
     else:
         raise ValueError("Invalid operation")
+
+    
